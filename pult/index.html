@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#16181d">
+<title>Claude Пульт</title>
+<style>
+:root {
+  --bg: #f4f5f7; --card: #ffffff; --text: #16181d; --muted: #6b7280; --line: #e5e7eb;
+  --accent: #d97757; --accent-text: #ffffff; --ok: #16a34a; --warn: #d97706; --bad: #dc2626;
+  --track: #d1d5db; --chip: #eef0f3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101216; --card: #1a1d23; --text: #eceef2; --muted: #9aa1ad; --line: #2a2e36;
+    --accent: #e08a6c; --accent-text: #16181d; --track: #3a3f49; --chip: #242830;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101216; --card: #1a1d23; --text: #eceef2; --muted: #9aa1ad; --line: #2a2e36;
+  --accent: #e08a6c; --accent-text: #16181d; --track: #3a3f49; --chip: #242830;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+main { max-width: 560px; margin: 0 auto; padding: 12px 16px 40px; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0 12px; }
+h1 { font-size: 20px; margin: 0; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+.pill { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--chip); color: var(--muted); white-space: nowrap; }
+.pill.ok { color: var(--ok); } .pill.bad { color: var(--bad); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
+.row + .row { border-top: 1px solid var(--line); }
+.sub { color: var(--muted); font-size: 13px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+button { font: inherit; border: 1px solid var(--line); background: var(--chip); color: var(--text);
+  border-radius: 10px; padding: 9px 14px; min-height: 40px; cursor: pointer; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: transparent; font-weight: 600; }
+button:disabled { opacity: .5; }
+.sw { position: relative; width: 48px; height: 28px; flex: none; }
+.sw input { opacity: 0; width: 100%; height: 100%; margin: 0; position: absolute; z-index: 1; cursor: pointer; }
+.sw span { position: absolute; inset: 0; background: var(--track); border-radius: 999px; transition: background .15s; }
+.sw span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.sw input:checked + span { background: var(--accent); }
+.sw input:checked + span::after { transform: translateX(20px); }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.vol { display: flex; align-items: center; gap: 10px; padding-top: 6px; }
+.vol output { width: 44px; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.grid .row { border-top: 1px solid var(--line); }
+.item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; }
+.item + .item { border-top: 1px solid var(--line); }
+.item .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--track); margin-right: 8px; }
+.dot.busy { background: var(--warn); } .dot.wait { background: var(--accent); }
+.empty { color: var(--muted); font-size: 14px; }
+#toast { position: fixed; left: 16px; right: 16px; bottom: 16px; max-width: 528px; margin: 0 auto; background: var(--text);
+  color: var(--bg); border-radius: 12px; padding: 12px 14px; font-size: 14px; opacity: 0; transform: translateY(10px);
+  transition: all .2s; pointer-events: none; }
+#toast.show { opacity: 1; transform: none; }
+textarea, input[type=text] { width: 100%; font: inherit; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); }
+.hidden { display: none !important; }
+@media (max-width: 380px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Claude · пульт</h1>
+    <span id="status" class="pill">подключаюсь…</span>
+  </header>
+
+  <section id="setup" class="card hidden">
+    <h2>Подключение</h2>
+    <p class="sub">Открой пульт по кнопке «Пульт» из любого пуша или вставь сюда ссылку из окна настроек на компе.</p>
+    <input id="setupLink" type="text" placeholder="…#k=claude-ctl-…&s=https://ntfy.sh">
+    <div class="btns"><button class="primary" id="setupSave">Сохранить</button></div>
+  </section>
+
+  <div id="app" class="hidden">
+    <section class="card">
+      <div class="row"><div><b>Уведомления</b><div class="sub" id="muteInfo"></div></div>
+        <label class="sw"><input type="checkbox" data-key="enabled"><span></span></label></div>
+      <div class="btns">
+        <button data-mute="30">Тишина 30 мин</button><button data-mute="60">1 ч</button>
+        <button data-mute="180">3 ч</button><button data-mute="0">Снять</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Ждут «Продолжить»</h2>
+      <div id="waiting"></div>
+    </section>
+
+    <section class="card" id="diedCard">
+      <h2>Оборванные сессии</h2>
+      <div id="died"></div>
+    </section>
+
+    <section class="card">
+      <h2>Запустить Claude</h2>
+      <p class="sub" style="margin:0 0 6px">Запускает Remote Control в папке; сессия появится в приложении Claude → Code.</p>
+      <div id="dirs"></div>
+      <div id="running"></div>
+    </section>
+
+    <div id="events"></div>
+
+    <section class="card">
+      <h2>Лимит использования</h2>
+      <div class="row"><div>Авторезюм после сброса лимита<div class="sub" id="arInfo"></div></div>
+        <label class="sw"><input type="checkbox" id="autoresume"><span></span></label></div>
+    </section>
+
+    <section class="card">
+      <h2>Живые сессии</h2>
+      <div id="sessions"></div>
+    </section>
+
+    <p class="sub">Команды идут через ntfy на компьютер, ответ приходит за пару секунд.
+      <a href="#" id="forget" style="color:var(--muted)">Забыть подключение</a></p>
+  </div>
+</main>
+<div id="toast"></div>
+<script>
+(() => {
+  const FIELDS = [["sound", "Звук на ПК"], ["phone", "Пуш"], ["vibrate", "Вибрация"], ["repeat", "Повтор"]];
+  const EXTRA = { stop: [["continue_button", "Кнопка «Продолжить»"]],
+                  failure: [["sentinel", "Сторож сессий"], ["sentinel_idle", "…и простаивающих"]] };
+  const $ = (s) => document.querySelector(s);
+  let conf = null, state = null, lastTs = 0, es = null;
+
+  function store(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  function parseLink(text) {
+    const h = (text.includes("#") ? text.split("#")[1] : text).replace(/^#/, "");
+    const p = new URLSearchParams(h);
+    const k = p.get("k"), s = p.get("s") || "https://ntfy.sh";
+    return k ? { k, s: s.replace(/\/+$/, "") } : null;
+  }
+
+  function init() {
+    conf = parseLink(location.hash) || (load("pult") ? JSON.parse(load("pult")) : null);
+    if (conf) { store("pult", JSON.stringify(conf)); if (location.hash) history.replaceState(null, "", location.pathname); }
+    $("#setup").classList.toggle("hidden", !!conf);
+    $("#app").classList.toggle("hidden", !conf);
+    if (conf) connect();
+  }
+
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  async function send(cmd) {
+    try {
+      const r = await fetch(`${conf.s}/${conf.k}`, { method: "POST", body: JSON.stringify(cmd) });
+      if (!r.ok) throw new Error(r.status);
+    } catch (e) { toast("Не отправилось: " + e.message); }
+  }
+
+  function connect() {
+    if (es) es.close();
+    es = new EventSource(`${conf.s}/${conf.k}-s/sse?since=latest`);
+    es.onmessage = (e) => {
+      try { const m = JSON.parse(e.data); if (m.event === "message" || m.message) apply(JSON.parse(m.message)); } catch (err) {}
+    };
+    es.onerror = () => setStatus();
+    send({ cmd: "state" });
+  }
+
+  function setStatus() {
+    const el = $("#status");
+    if (!lastTs) { el.textContent = "нет данных от ПК"; el.className = "pill bad"; return; }
+    const age = Math.round(Date.now() / 1000 - lastTs);
+    const fresh = age < 40 * 60;
+    el.textContent = fresh ? (age < 90 ? "ПК на связи" : `ПК: ${Math.round(age / 60)} мин назад`) : "ПК молчит";
+    el.className = "pill " + (fresh ? "ok" : "bad");
+  }
+
+  function sw(checked, onChange) {
+    const l = document.createElement("label"); l.className = "sw";
+    const i = document.createElement("input"); i.type = "checkbox"; i.checked = !!checked;
+    i.onchange = () => onChange(i.checked);
+    l.append(i, document.createElement("span")); return l;
+  }
+
+  function ago(ts) {
+    const m = Math.round((Date.now() / 1000 - ts) / 60);
+    return m < 1 ? "только что" : m < 60 ? `${m} мин` : `${Math.floor(m / 60)} ч ${m % 60} мин`;
+  }
+
+  function apply(s) {
+    const prevMsg = state && state.msg;
+    state = s; lastTs = s.ts; setStatus();
+    if (s.msg && s.msg !== prevMsg) toast(s.msg);
+
+    document.querySelector('[data-key="enabled"]').checked = !!s.enabled;
+    const mu = s.mute_until * 1000 - Date.now();
+    $("#muteInfo").textContent = mu > 0 ? `Пуши заглушены ещё на ${Math.ceil(mu / 60000)} мин` : "Пуши идут";
+
+    const w = $("#waiting"); w.innerHTML = "";
+    if (!s.waiting.length) w.innerHTML = '<div class="empty">Никто не ждёт</div>';
+    for (const it of s.waiting) {
+      const d = document.createElement("div"); d.className = "item";
+      d.innerHTML = `<div class="t"><span class="dot wait"></span></div>`;
+      d.firstChild.append(it.title, Object.assign(document.createElement("div"), { className: "sub", textContent: "ждёт " + ago(it.since) }));
+      const b = document.createElement("button"); b.className = "primary"; b.textContent = "▶ Продолжить";
+      b.onclick = () => { b.disabled = true; send({ cmd: "continue", sid: it.sid }); };
+      d.append(b); w.append(d);
+    }
+
+    const died = s.died || [];
+    $("#diedCard").classList.toggle("hidden", !died.length);
+    const dd = $("#died"); dd.innerHTML = "";
+    for (const it of died) {
+      const d = document.createElement("div"); d.className = "item"; d.style.flexWrap = "wrap";
+      const t = document.createElement("div"); t.className = "t"; t.style.flex = "1 1 100%";
+      t.innerHTML = `<span class="dot ${it.busy ? "busy" : ""}"></span>`;
+      t.append(it.title, Object.assign(document.createElement("div"), { className: "sub",
+        textContent: (it.busy ? "была в работе, " : "") + "оборвалась " + ago(it.ended) + " назад" }));
+      const go = Object.assign(document.createElement("button"), { className: "primary", textContent: "▶ Поднять и продолжить" });
+      go.onclick = () => { go.disabled = true; send({ cmd: "revive", sid: it.sid, go: true }); };
+      const up = Object.assign(document.createElement("button"), { textContent: "Поднять" });
+      up.onclick = () => { up.disabled = true; send({ cmd: "revive", sid: it.sid }); };
+      const row = document.createElement("div"); row.className = "btns"; row.append(go, up);
+      d.append(t, row); dd.append(d);
+    }
+
+    const dl = $("#dirs"); dl.innerHTML = "";
+    if (!(s.dirs || []).length) dl.innerHTML = '<div class="empty">Нет папок — добавь их в настройках на ПК</div>';
+    for (const it of s.dirs || []) {
+      const d = document.createElement("div"); d.className = "item";
+      const t = document.createElement("div"); t.className = "t";
+      t.append(it.n, Object.assign(document.createElement("div"), { className: "sub",
+        textContent: it.t ? it.p : "⚠ не доверена: первый запуск подтверди на ПК" }));
+      const b = Object.assign(document.createElement("button"), { textContent: "▶ Запустить" });
+      b.onclick = () => { if (confirm(`Запустить Claude в «${it.n}»?`)) { b.disabled = true; send({ cmd: "launch", dir: it.p }); } };
+      d.append(t, b); dl.append(d);
+    }
+    const rl = $("#running"); rl.innerHTML = "";
+    for (const it of s.running || []) {
+      const d = document.createElement("div"); d.className = "item";
+      const t = document.createElement("div"); t.className = "t";
+      t.innerHTML = '<span class="dot busy"></span>';
+      t.append((it.kind === "revive" ? "поднята: " : "запущен: ") + it.name);
+      const b = Object.assign(document.createElement("button"), { textContent: "■ Стоп" });
+      b.onclick = () => { if (confirm("Остановить этот процесс Claude?")) { b.disabled = true; send({ cmd: "kill", pid: it.pid }); } };
+      d.append(t, b); rl.append(d);
+    }
+
+    const ev = $("#events"); ev.innerHTML = "";
+    for (const [g, cfg] of Object.entries(s.events)) {
+      const c = document.createElement("section"); c.className = "card";
+      const h = document.createElement("h2"); h.textContent = (s.labels && s.labels[g]) || g; c.append(h);
+      const grid = document.createElement("div"); grid.className = "grid";
+      for (const [f, label] of FIELDS.concat(EXTRA[g] || [])) {
+        if (!(f in cfg)) continue;
+        const r = document.createElement("div"); r.className = "row";
+        r.append(Object.assign(document.createElement("span"), { textContent: label }),
+                 sw(cfg[f], (v) => send({ cmd: "set", key: `events.${g}.${f}`, value: v })));
+        grid.append(r);
+      }
+      c.append(grid);
+      const vol = document.createElement("div"); vol.className = "vol";
+      const rng = Object.assign(document.createElement("input"), { type: "range", min: 0, max: 100, value: cfg.volume });
+      const out = Object.assign(document.createElement("output"), { textContent: cfg.volume + "%" });
+      rng.oninput = () => out.textContent = rng.value + "%";
+      rng.onchange = () => send({ cmd: "set", key: `events.${g}.volume`, value: +rng.value });
+      vol.append(Object.assign(document.createElement("span"), { className: "sub", textContent: "Громкость" }), rng, out);
+      c.append(vol); ev.append(c);
+    }
+
+    $("#autoresume").checked = !!s.autoresume;
+    $("#arInfo").textContent = s.autoresume == null ? "в settings.json не задано (действует значение по умолчанию)" : "";
+
+    const ss = $("#sessions"); ss.innerHTML = "";
+    if (!s.sessions.length) ss.innerHTML = '<div class="empty">Нет данных о живых сессиях</div>';
+    for (const it of s.sessions) {
+      const d = document.createElement("div"); d.className = "item";
+      const t = document.createElement("div"); t.className = "t";
+      t.innerHTML = `<span class="dot ${it.busy ? "busy" : ""}"></span>`;
+      t.append(it.title);
+      d.append(t, Object.assign(document.createElement("span"), { className: "sub", textContent: it.busy ? "в работе" : ago(it.ts) }));
+      ss.append(d);
+    }
+  }
+
+  document.querySelector('[data-key="enabled"]').onchange = (e) => send({ cmd: "set", key: "enabled", value: e.target.checked });
+  document.querySelectorAll("[data-mute]").forEach((b) => b.onclick = () => send({ cmd: "mute", minutes: +b.dataset.mute }));
+  $("#autoresume").onchange = (e) => send({ cmd: "autoresume", value: e.target.checked });
+  $("#setupSave").onclick = () => {
+    const c = parseLink($("#setupLink").value.trim());
+    if (!c) return toast("В ссылке нет #k=…");
+    store("pult", JSON.stringify(c)); init();
+  };
+  $("#forget").onclick = (e) => { e.preventDefault(); store("pult", null); conf = null; if (es) es.close(); init(); };
+  setInterval(setStatus, 15000);
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Разное</title>
+<meta name="theme-color" content="#F6EFE4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1E1814" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect x=%224%22 y=%224%22 width=%2210%22 height=%2210%22 rx=%223%22 fill=%22%236B4330%22/%3E%3Crect x=%2218%22 y=%224%22 width=%2210%22 height=%2210%22 rx=%223%22 fill=%22%23F0C04A%22/%3E%3Crect x=%224%22 y=%2218%22 width=%2210%22 height=%2210%22 rx=%223%22 fill=%22%23EE7A60%22/%3E%3Crect x=%2218%22 y=%2218%22 width=%2210%22 height=%2210%22 rx=%223%22 fill=%22%234F7D2E%22/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #F6EFE4; --card: #FFFBF4; --line: #E2D5C2; --ink: #2B211B; --ink2: #6E5E52; --accent: #6B4330; --on-accent: #FFF8EE;
+  --f: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #1E1814; --card: #2B231D; --line: #43362C; --ink: #F3E9DC; --ink2: #C9B8A6; --accent: #E9B48C; --on-accent: #1E1814; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #1E1814; --card: #2B231D; --line: #43362C; --ink: #F3E9DC; --ink2: #C9B8A6; --accent: #E9B48C; --on-accent: #1E1814; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 var(--f); -webkit-tap-highlight-color: transparent; }
+main { max-width: 560px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px 40px; }
+h1 { font-size: 26px; margin: 4px 0 4px; letter-spacing: -.01em; }
+.sub { color: var(--ink2); margin: 0 0 18px; font-size: 15px; }
+.app { display: grid; grid-template-columns: 56px 1fr; gap: 4px 14px; align-items: center; text-decoration: none; color: inherit;
+  background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; margin-bottom: 12px; min-height: 88px; }
+.app:active { transform: translateY(1px); }
+.ico { grid-row: span 2; width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; }
+.name { font-weight: 700; font-size: 18px; }
+.desc { color: var(--ink2); font-size: 14px; }
+.note { font-size: 13px; color: var(--ink2); margin: -4px 4px 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Разное</h1>
+  <p class="sub">Мои маленькие приложения для телефона.</p>
+
+  <a class="app" href="./pult/">
+    <span class="ico" style="background:#D97757" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30"><rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="9" r="2.4" fill="#fff"/><path d="M9 15h6M9 18h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></span>
+    <span class="name">Пульт Claude</span>
+    <span class="desc">Сессии Claude Code: «Продолжить», тишина, запуск. Работает откуда угодно.</span>
+  </a>
+  <p class="note">Ключ подключения приходит в пуше (кнопка «Пульт») и запоминается на телефоне – один раз открыл из пуша, дальше открывается отсюда.</p>
+
+  <a class="app" href="http://192.168.1.150:8790/">
+    <span class="ico" style="background:#6B4330" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30"><rect x="4" y="4" width="16" height="16" rx="3" fill="#6B4330" stroke="#fff" stroke-width="2"/><path d="M4 10h16" stroke="#F0C04A" stroke-width="2.2"/><path d="M4 14h16" stroke="#EE7A60" stroke-width="2.2"/></svg></span>
+    <span class="name">Кухня</span>
+    <span class="desc">Гайд по готовке с таймерами и мостом к Claude. Сейчас – равиоли какао-желток.</span>
+  </a>
+  <p class="note">Открывается дома по Wi-Fi: страница живёт на компе. Первый раз – по ссылке с токеном из окна сервера, дальше без него.</p>
+</main>
+</body>
+</html>
